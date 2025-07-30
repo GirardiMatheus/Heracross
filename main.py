@@ -1,5 +1,5 @@
 import argparse
-from system_info import cpu, memory, disk, motherboard
+from system_info import cpu, memory, disk, motherboard, gpu
 
 def print_section(title, data, indent=0):
     """Helper function to print data sections with proper formatting"""
@@ -12,7 +12,8 @@ def print_section(title, data, indent=0):
                 if v and isinstance(v[0], dict):
                     label = "Module" if k.lower().startswith("module") or k == "Modules" else \
                             "Partition" if k.lower().startswith("partition") or k == "Partitions" else \
-                            "Disk" if k.lower().startswith("hardware") or k == "Hardware" else "Item"
+                            "Disk" if k.lower().startswith("hardware") or k == "Hardware" else \
+                            "GPU" if k.lower().startswith("hardware") or k == "Hardware" else "Item"
                     print(f"{prefix}  {k}:")
                     for i, item in enumerate(v, 1):
                         print(f"{prefix}    {label} {i}:")
@@ -55,6 +56,13 @@ def main():
     print("=== Disk Information ===")
     disk_info = disk.get_disk_info(include_partitions=args.disk_partitions)
     for section_name, section_data in disk_info.items():
+        print_section(section_name, section_data)
+        print()
+    
+    print("=== GPU Information ===")
+    gpu_info = gpu.get_gpu_info()
+    
+    for section_name, section_data in gpu_info.items():
         print_section(section_name, section_data)
         print()
     
