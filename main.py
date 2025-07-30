@@ -1,5 +1,5 @@
 import argparse
-from system_info import cpu, memory, disk, motherboard, gpu, network
+from system_info import cpu, memory, disk, motherboard, gpu, network, os_info
 
 def print_section(title, data, indent=0):
     """Helper function to print data sections with proper formatting"""
@@ -41,6 +41,13 @@ def main():
     parser.add_argument('--disk-partitions', action='store_true', help='Show disk partition info')
     parser.add_argument('--network-details', action='store_true', help='Show detailed network interface info')
     args = parser.parse_args()
+
+    print("=== Operating System Information ===")
+    os_information = os_info.get_os_info()
+    
+    for section_name, section_data in os_information.items():
+        print_section(section_name, section_data)
+        print()
 
     print("=== CPU Information ===")
     cpu_info = cpu.get_cpu_info()
