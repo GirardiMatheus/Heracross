@@ -1,5 +1,5 @@
 import argparse
-from system_info import cpu, memory, disk, motherboard, gpu
+from system_info import cpu, memory, disk, motherboard, gpu, network
 
 def print_section(title, data, indent=0):
     """Helper function to print data sections with proper formatting"""
@@ -13,7 +13,9 @@ def print_section(title, data, indent=0):
                     label = "Module" if k.lower().startswith("module") or k == "Modules" else \
                             "Partition" if k.lower().startswith("partition") or k == "Partitions" else \
                             "Disk" if k.lower().startswith("hardware") or k == "Hardware" else \
-                            "GPU" if k.lower().startswith("hardware") or k == "Hardware" else "Item"
+                            "GPU" if k.lower().startswith("hardware") or k == "Hardware" else \
+                            "Interface" if k.lower().startswith("interface") or k == "Interfaces" else \
+                            "Adapter" if k.lower().startswith("hardware") or k == "Hardware" else "Item"
                     print(f"{prefix}  {k}:")
                     for i, item in enumerate(v, 1):
                         print(f"{prefix}    {label} {i}:")
@@ -37,6 +39,7 @@ def print_section(title, data, indent=0):
 def main():
     parser = argparse.ArgumentParser(description="Show system info.")
     parser.add_argument('--disk-partitions', action='store_true', help='Show disk partition info')
+    parser.add_argument('--network-details', action='store_true', help='Show detailed network interface info')
     args = parser.parse_args()
 
     print("=== CPU Information ===")
@@ -63,6 +66,13 @@ def main():
     gpu_info = gpu.get_gpu_info()
     
     for section_name, section_data in gpu_info.items():
+        print_section(section_name, section_data)
+        print()
+    
+    print("=== Network Information ===")
+    network_info = network.get_network_info(include_details=args.network_details)
+    
+    for section_name, section_data in network_info.items():
         print_section(section_name, section_data)
         print()
     
