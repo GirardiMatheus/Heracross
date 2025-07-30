@@ -16,32 +16,39 @@ def get_cpu_info():
     }
 
 def get_basic_cpu_info():
-    """Get basic CPU information from lscpu"""
+    """Get basic CPU information from lscpu, supporting localized output"""
     try:
         output = subprocess.run(["lscpu"], capture_output=True, text=True)
         info = {}
         for line in output.stdout.splitlines():
             if ":" in line:
                 key, value = line.split(":", 1)
-                info[key.strip()] = value.strip()
-        
+                info[key.strip().lower()] = value.strip()
+
+        def find_key(possible_keys):
+            for k in possible_keys:
+                for real_key in info:
+                    if k.lower() in real_key:
+                        return info[real_key]
+            return None
+
         return {
-            "Model": info.get("Model name"),
-            "Architecture": info.get("Architecture"),
-            "Vendor": info.get("Vendor ID"),
-            "CPU Family": info.get("CPU family"),
-            "Model Number": info.get("Model"),
-            "Stepping": info.get("Stepping"),
-            "Cores (physical)": info.get("Core(s) per socket"),
-            "Threads (logical)": info.get("CPU(s)"),
-            "Sockets": info.get("Socket(s)"),
-            "Max MHz": info.get("CPU max MHz"),
-            "Min MHz": info.get("CPU min MHz"),
-            "Current MHz": info.get("CPU MHz"),
-            "Cache L1d": info.get("L1d cache"),
-            "Cache L1i": info.get("L1i cache"),
-            "Cache L2": info.get("L2 cache"),
-            "Cache L3": info.get("L3 cache"),
+            "Model": find_key(["model name", "nome do modelo"]),
+            "Architecture": find_key(["architecture", "arquitetura"]),
+            "Vendor": find_key(["vendor id", "fabricante"]),
+            "CPU Family": find_key(["cpu family", "família da cpu"]),
+            "Model Number": find_key(["model", "modelo"]),
+            "Stepping": find_key(["stepping"]),
+            "Cores (physical)": find_key(["core(s) per socket", "núcleo(s) por soquete"]),
+            "Threads (logical)": find_key(["cpu(s)", "processador(es)"]),
+            "Sockets": find_key(["socket(s)", "soquete(s)"]),
+            "Max MHz": find_key(["cpu max mhz"]),
+            "Min MHz": find_key(["cpu min mhz"]),
+            "Current MHz": find_key(["cpu mhz"]),
+            "Cache L1d": find_key(["l1d cache"]),
+            "Cache L1i": find_key(["l1i cache"]),
+            "Cache L2": find_key(["l2 cache"]),
+            "Cache L3": find_key(["l3 cache"]),
         }
     except Exception as e:
         return {"Error": f"Could not get basic CPU info: {str(e)}"}
