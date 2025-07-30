@@ -1,2 +1,5 @@
 rich
 psutil
+tk
+argparse
+pillow
