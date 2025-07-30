@@ -1,5 +1,5 @@
 import argparse
-from system_info import cpu, memory, disk, motherboard, gpu, network, os_info
+from system_info import cpu, memory, disk, motherboard, gpu, network, os_info, usb
 
 def print_section(title, data, indent=0):
     """Helper function to print data sections with proper formatting"""
@@ -15,7 +15,9 @@ def print_section(title, data, indent=0):
                             "Disk" if k.lower().startswith("hardware") or k == "Hardware" else \
                             "GPU" if k.lower().startswith("hardware") or k == "Hardware" else \
                             "Interface" if k.lower().startswith("interface") or k == "Interfaces" else \
-                            "Adapter" if k.lower().startswith("hardware") or k == "Hardware" else "Item"
+                            "Adapter" if k.lower().startswith("hardware") or k == "Hardware" else \
+                            "Device" if k.lower().startswith("device") or k == "Devices" else \
+                            "Controller" if k.lower().startswith("controller") or k == "Controllers" else "Item"
                     print(f"{prefix}  {k}:")
                     for i, item in enumerate(v, 1):
                         print(f"{prefix}    {label} {i}:")
@@ -40,6 +42,7 @@ def main():
     parser = argparse.ArgumentParser(description="Show system info.")
     parser.add_argument('--disk-partitions', action='store_true', help='Show disk partition info')
     parser.add_argument('--network-details', action='store_true', help='Show detailed network interface info')
+    parser.add_argument('--usb-details', action='store_true', help='Show detailed USB device info')
     args = parser.parse_args()
 
     print("=== Operating System Information ===")
@@ -80,6 +83,13 @@ def main():
     network_info = network.get_network_info(include_details=args.network_details)
     
     for section_name, section_data in network_info.items():
+        print_section(section_name, section_data)
+        print()
+    
+    print("=== USB Information ===")
+    usb_info = usb.get_usb_info(include_details=args.usb_details)
+    
+    for section_name, section_data in usb_info.items():
         print_section(section_name, section_data)
         print()
     
