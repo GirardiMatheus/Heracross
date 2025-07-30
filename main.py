@@ -1,4 +1,5 @@
-from system_info import cpu, memory
+import argparse
+from system_info import cpu, memory, disk
 
 def print_section(title, data, indent=0):
     """Helper function to print data sections with proper formatting"""
@@ -9,23 +10,34 @@ def print_section(title, data, indent=0):
         for k, v in data.items():
             if isinstance(v, list):
                 if v and isinstance(v[0], dict):
-                    # Handle list of dictionaries (like memory modules)
+                    label = "Module" if k.lower().startswith("module") or k == "Modules" else \
+                            "Partition" if k.lower().startswith("partition") or k == "Partitions" else \
+                            "Disk" if k.lower().startswith("hardware") or k == "Hardware" else "Item"
                     print(f"{prefix}  {k}:")
                     for i, item in enumerate(v, 1):
-                        print(f"{prefix}    Module {i}:")
+                        print(f"{prefix}    {label} {i}:")
                         for key, value in item.items():
                             print(f"{prefix}      {key}: {value}")
                 else:
-                    # Handle list of strings
                     print(f"{prefix}  {k}: {', '.join(str(item) for item in v) if v else 'None'}")
             elif isinstance(v, dict):
                 print_section(k, v, indent + 1)
             else:
                 print(f"{prefix}  {k}: {v}")
+    elif isinstance(data, list) and data and isinstance(data[0], dict):
+        print(f"{prefix}  Items:")
+        for i, item in enumerate(data, 1):
+            print(f"{prefix}    Item {i}:")
+            for key, value in item.items():
+                print(f"{prefix}      {key}: {value}")
     else:
         print(f"{prefix}  {data}")
 
 def main():
+    parser = argparse.ArgumentParser(description="Show system info.")
+    parser.add_argument('--disk-partitions', action='store_true', help='Show disk partition info')
+    args = parser.parse_args()
+
     print("=== CPU Information ===")
     cpu_info = cpu.get_cpu_info()
     
@@ -38,7 +50,21 @@ def main():
     
     for section_name, section_data in memory_info.items():
         print_section(section_name, section_data)
-        print()  
+        print()
+    
+    print("=== Disk Information ===")
+    disk_info = disk.get_disk_info(include_partitions=args.disk_partitions)
+    print("Hardware:")
+    for idx, item in enumerate(disk_info["Hardware"], 1):
+        print(f"  Item {idx}:")
+        for k, v in item.items():
+            print(f"    {k}: {v}")
+    if args.disk_partitions and "Partitions" in disk_info:
+        print("\nPartitions:")
+        for idx, item in enumerate(disk_info["Partitions"], 1):
+            print(f"  Item {idx}:")
+            for k, v in item.items():
+                print(f"    {k}: {v}")
 
 if __name__ == "__main__":
     main()
